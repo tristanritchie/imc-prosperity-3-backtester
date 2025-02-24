@@ -232,9 +232,9 @@ def main() -> None:
         action="store_true",
         help="preserve original timestamps in output log rather than making them increase across days",
     )
-    parser.add_argument(
-        "--no-names", action="store_true", help="don't use de-anonymized trades data, even if it exists"
-    )
+    # parser.add_argument(
+    #     "--no-names", action="store_true", help="don't use de-anonymized trades data, even if it exists"
+    # )
     parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {metadata.version(__package__)}")
 
     args = parser.parse_args()
@@ -276,7 +276,7 @@ def main() -> None:
             day_num,
             args.print,
             args.no_trades_matching,
-            args.no_names,
+            True,  # args.no_names,
             show_progress_bars,
         )
 
