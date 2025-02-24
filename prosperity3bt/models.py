@@ -1,7 +1,10 @@
-import orjson
 from dataclasses import dataclass
-from prosperity3bt.datamodel import Trade
 from typing import Any
+
+import orjson
+
+from prosperity3bt.datamodel import Trade
+
 
 @dataclass
 class SandboxLogRow:
@@ -17,11 +20,15 @@ class SandboxLogRow:
         )
 
     def __str__(self) -> str:
-        return orjson.dumps({
-            "sandboxLog": self.sandbox_log,
-            "lambdaLog": self.lambda_log,
-            "timestamp": self.timestamp,
-        }, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2).decode("utf-8")
+        return orjson.dumps(
+            {
+                "sandboxLog": self.sandbox_log,
+                "lambdaLog": self.lambda_log,
+                "timestamp": self.timestamp,
+            },
+            option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2,
+        ).decode("utf-8")
+
 
 @dataclass
 class ActivityLogRow:
@@ -41,6 +48,7 @@ class ActivityLogRow:
     def __str__(self) -> str:
         return ";".join(map(str, self.columns))
 
+
 @dataclass
 class TradeRow:
     trade: Trade
@@ -50,17 +58,21 @@ class TradeRow:
         return self.trade.timestamp
 
     def with_offset(self, timestamp_offset: int) -> "TradeRow":
-        return TradeRow(Trade(
-            self.trade.symbol,
-            self.trade.price,
-            self.trade.quantity,
-            self.trade.buyer,
-            self.trade.seller,
-            self.trade.timestamp + timestamp_offset,
-        ))
+        return TradeRow(
+            Trade(
+                self.trade.symbol,
+                self.trade.price,
+                self.trade.quantity,
+                self.trade.buyer,
+                self.trade.seller,
+                self.trade.timestamp + timestamp_offset,
+            )
+        )
 
     def __str__(self) -> str:
-        return "  " + f"""
+        return (
+            "  "
+            + f"""
   {{
     "timestamp": {self.trade.timestamp},
     "buyer": "{self.trade.buyer}",
@@ -71,6 +83,8 @@ class TradeRow:
     "quantity": {self.trade.quantity},
   }}
         """.strip()
+        )
+
 
 @dataclass
 class BacktestResult:
@@ -80,6 +94,7 @@ class BacktestResult:
     sandbox_logs: list[SandboxLogRow]
     activity_logs: list[ActivityLogRow]
     trades: list[TradeRow]
+
 
 @dataclass
 class MarketTrade:

@@ -4,15 +4,18 @@ from importlib import resources
 from pathlib import Path
 from typing import ContextManager, Optional
 
+
 @contextmanager
 def wrap_in_context_manager(value):
     yield value
+
 
 class FileReader:
     @abstractmethod
     def file(self, path_parts: list[str]) -> ContextManager[Optional[Path]]:
         """Given a path to a file, yields a single Path object to the file or None if the file does not exist."""
         raise NotImplementedError()
+
 
 class FileSystemReader(FileReader):
     def __init__(self, root: Path) -> None:
@@ -28,6 +31,7 @@ class FileSystemReader(FileReader):
 
         return wrap_in_context_manager(file)
 
+
 class PackageResourcesReader(FileReader):
     def file(self, path_parts: list[str]) -> ContextManager[Optional[Path]]:
         try:
@@ -36,5 +40,5 @@ class PackageResourcesReader(FileReader):
                 return wrap_in_context_manager(None)
 
             return resources.as_file(container / path_parts[-1])
-        except:
+        except Exception:
             return wrap_in_context_manager(None)

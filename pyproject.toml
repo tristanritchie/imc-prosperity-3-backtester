@@ -33,3 +33,14 @@ include = ["prosperity3bt", "prosperity3bt.*"]
 
 [tool.setuptools.package-data]
 prosperity3bt = ["resources/*/*.csv"]
+
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.9.7",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = ["I"]

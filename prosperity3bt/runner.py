@@ -1,13 +1,16 @@
 import os
 from contextlib import closing, redirect_stdout
 from io import StringIO
+from typing import Any
+
 from IPython.utils.io import Tee
-from prosperity3bt.data import BacktestData, LIMITS, read_day_data
+from tqdm import tqdm
+
+from prosperity3bt.data import LIMITS, BacktestData, read_day_data
 from prosperity3bt.datamodel import Observation, Order, OrderDepth, Symbol, Trade, TradingState
 from prosperity3bt.file_reader import FileReader
 from prosperity3bt.models import ActivityLogRow, BacktestResult, MarketTrade, SandboxLogRow, TradeRow
-from tqdm import tqdm
-from typing import Any
+
 
 def prepare_state(state: TradingState, data: BacktestData) -> None:
     for product in data.products:
@@ -27,6 +30,7 @@ def prepare_state(state: TradingState, data: BacktestData) -> None:
             "product": product,
             "denomination": 1,
         }
+
 
 def create_activity_logs(
     state: TradingState,
@@ -69,6 +73,7 @@ def create_activity_logs(
 
         result.activity_logs.append(ActivityLogRow(columns))
 
+
 def enforce_limits(
     state: TradingState,
     data: BacktestData,
@@ -90,7 +95,10 @@ def enforce_limits(
     if len(sandbox_log_lines) > 0:
         sandbox_row.sandbox_log += "\n" + "\n".join(sandbox_log_lines)
 
-def match_buy_order(state: TradingState, data: BacktestData, order: Order, market_trades: list[MarketTrade]) -> list[Trade]:
+
+def match_buy_order(
+    state: TradingState, data: BacktestData, order: Order, market_trades: list[MarketTrade]
+) -> list[Trade]:
     trades = []
 
     order_depth = state.order_depths[order.symbol]
@@ -117,7 +125,9 @@ def match_buy_order(state: TradingState, data: BacktestData, order: Order, marke
 
         volume = min(order.quantity, market_trade.sell_quantity)
 
-        trades.append(Trade(order.symbol, order.price, volume, "SUBMISSION", market_trade.trade.seller, state.timestamp))
+        trades.append(
+            Trade(order.symbol, order.price, volume, "SUBMISSION", market_trade.trade.seller, state.timestamp)
+        )
 
         state.position[order.symbol] = state.position.get(order.symbol, 0) + volume
         data.profit_loss[order.symbol] -= order.price * volume
@@ -130,7 +140,10 @@ def match_buy_order(state: TradingState, data: BacktestData, order: Order, marke
 
     return trades
 
-def match_sell_order(state: TradingState, data: BacktestData, order: Order, market_trades: list[MarketTrade]) -> list[Trade]:
+
+def match_sell_order(
+    state: TradingState, data: BacktestData, order: Order, market_trades: list[MarketTrade]
+) -> list[Trade]:
     trades = []
 
     order_depth = state.order_depths[order.symbol]
@@ -170,6 +183,7 @@ def match_sell_order(state: TradingState, data: BacktestData, order: Order, mark
 
     return trades
 
+
 def match_order(state: TradingState, data: BacktestData, order: Order, market_trades: list[MarketTrade]) -> list[Trade]:
     if order.quantity > 0:
         return match_buy_order(state, data, order, market_trades)
@@ -177,6 +191,7 @@ def match_order(state: TradingState, data: BacktestData, order: Order, market_tr
         return match_sell_order(state, data, order, market_trades)
     else:
         return []
+
 
 def match_orders(
     state: TradingState,
@@ -193,12 +208,14 @@ def match_orders(
         new_trades = []
 
         for order in orders.get(product, []):
-            new_trades.extend(match_order(
-                state,
-                data,
-                order,
-                [] if disable_trades_matching else market_trades.get(product, []),
-            ))
+            new_trades.extend(
+                match_order(
+                    state,
+                    data,
+                    order,
+                    [] if disable_trades_matching else market_trades.get(product, []),
+                )
+            )
 
         if len(new_trades) > 0:
             state.own_trades[product] = new_trades
@@ -212,6 +229,7 @@ def match_orders(
 
         state.market_trades[product] = remaining_market_trades
         result.trades.extend([TradeRow(trade) for trade in remaining_market_trades])
+
 
 def run_backtest(
     trader: Any,
