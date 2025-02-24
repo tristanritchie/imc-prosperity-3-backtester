@@ -76,4 +76,10 @@ During backtests two environment variables are set for the trader to know the ro
 
 ## Development
 
-If you want to make changes to the backtester, clone (or fork and clone) this repository and run `pip install -e .` in the project's root. This installs the project in editable mode, so any changes you make are automatically taken into account the next time you run `prosperity3bt`.
+Follow these steps if you want to make changes to the backtester:
+1. Install [uv](https://docs.astral.sh/uv/).
+2. Clone (or fork and clone) this repository.
+3. Open a terminal in your clone of the repository.
+4. Create a venv with `uv venv` and activate it.
+5. Run `uv sync`.
+6. Any changes you make are now automatically taken into account the next time you run `prosperity3bt` inside the venv.
