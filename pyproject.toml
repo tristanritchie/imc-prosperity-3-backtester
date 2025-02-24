@@ -1,10 +1,6 @@
-[build-system]
-requires = ["setuptools >= 61.0"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "prosperity2bt"
-description = "Backtester for IMC Prosperity 2 algorithms"
+name = "prosperity3bt"
+description = "Backtester for IMC Prosperity 3 algorithms"
 version = "0.0.0"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -20,16 +16,20 @@ classifiers = [
 requires-python = ">= 3.9"
 dependencies = ["ipython", "jsonpickle", "orjson", "tqdm"]
 
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
 [project.scripts]
-prosperity2bt = "prosperity2bt.__main__:main"
+prosperity3bt = "prosperity3bt.__main__:main"
 
 [project.urls]
-Repository = "https://github.com/jmerle/imc-prosperity-2-backtester"
-Issues = "https://github.com/jmerle/imc-prosperity-2-backtester/issues"
-Changelog = "https://github.com/jmerle/imc-prosperity-2-backtester/releases"
+Repository = "https://github.com/jmerle/imc-prosperity-3-backtester"
+Issues = "https://github.com/jmerle/imc-prosperity-3-backtester/issues"
+Changelog = "https://github.com/jmerle/imc-prosperity-3-backtester/releases"
 
 [tool.setuptools.packages.find]
-include = ["prosperity2bt", "prosperity2bt.*"]
+include = ["prosperity3bt", "prosperity3bt.*"]
 
 [tool.setuptools.package-data]
-prosperity2bt = ["resources/*/*.csv"]
+prosperity3bt = ["resources/*/*.csv"]

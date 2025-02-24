@@ -39,7 +39,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://pypi.org/p/prosperity2bt
+      url: https://pypi.org/p/prosperity3bt
 
     permissions:
       id-token: write
