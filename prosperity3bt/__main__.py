@@ -200,7 +200,7 @@ def format_path(path: Path) -> str:
 
 def main() -> None:
     parser = ArgumentParser(prog="prosperity3bt", description="Run a backtest.")
-    parser.add_argument("algorithm", type=str, help="path to the Python file containing the algoritm to backtest")
+    parser.add_argument("algorithm", type=str, help="path to the Python file containing the algorithm to backtest")
     parser.add_argument(
         "days",
         type=str,
