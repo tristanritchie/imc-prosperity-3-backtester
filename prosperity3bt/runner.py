@@ -120,7 +120,7 @@ def match_buy_order(
             return trades
 
     for market_trade in market_trades:
-        if market_trade.sell_quantity == 0 or market_trade.trade.price > order.price:
+        if market_trade.sell_quantity == 0 or market_trade.trade.price >= order.price:
             continue
 
         volume = min(order.quantity, market_trade.sell_quantity)
@@ -165,7 +165,7 @@ def match_sell_order(
             return trades
 
     for market_trade in market_trades:
-        if market_trade.buy_quantity == 0 or market_trade.trade.price < order.price:
+        if market_trade.buy_quantity == 0 or market_trade.trade.price <= order.price:
             continue
 
         volume = min(abs(order.quantity), market_trade.buy_quantity)
