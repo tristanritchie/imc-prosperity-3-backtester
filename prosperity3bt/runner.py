@@ -25,7 +25,7 @@ def prepare_state(state: TradingState, data: BacktestData) -> None:
 
         state.order_depths[product] = order_depth
 
-        state.listings[product] = {
+        state.listings[product] = {  # type: ignore[assignment]
             "symbol": product,
             "product": product,
             "denomination": 1,
@@ -200,9 +200,10 @@ def match_orders(
     result: BacktestResult,
     disable_trades_matching: bool,
 ) -> None:
-    market_trades: dict[Symbol, list[MarketTrade]] = {}
-    for product, trades in data.trades[state.timestamp].items():
-        market_trades[product] = [MarketTrade(t, t.quantity, t.quantity) for t in trades]
+    market_trades = {
+        product: [MarketTrade(t, t.quantity, t.quantity) for t in trades]
+        for product, trades in data.trades[state.timestamp].items()
+    }
 
     for product in data.products:
         new_trades = []
@@ -279,7 +280,7 @@ def run_backtest(
 
         # Tee calls stdout.close(), making stdout.getvalue() impossible
         # This override makes getvalue() possible after close()
-        stdout.close = lambda: None
+        stdout.close = lambda: None  # type: ignore[method-assign]
 
         if print_output:
             with closing(Tee(stdout)):

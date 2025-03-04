@@ -177,7 +177,7 @@ class HTTPRequestHandler(SimpleHTTPRequestHandler):
 
 
 def open_visualizer(output_file: Path, no_requests: int) -> None:
-    http_handler = partial(HTTPRequestHandler, directory=output_file.parent)
+    http_handler = partial(HTTPRequestHandler, directory=str(output_file.parent))
     http_server = HTTPServer(("localhost", 0), http_handler)
 
     webbrowser.open(
@@ -294,7 +294,7 @@ def main() -> None:
         write_output(output_file, merged_results)
         print(f"\nSuccessfully saved backtest results to {format_path(output_file)}")
 
-    if args.vis:
+    if args.vis and output_file is not None:
         open_visualizer(output_file, args.vis_requests)
 
 

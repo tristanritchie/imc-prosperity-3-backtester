@@ -36,6 +36,7 @@ prosperity3bt = ["resources/*/*.csv"]
 
 [tool.uv]
 dev-dependencies = [
+    "mypy>=1.15.0",
     "ruff>=0.9.7",
 ]
 
@@ -44,3 +45,10 @@ line-length = 120
 
 [tool.ruff.lint]
 extend-select = ["I"]
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "prosperity3bt.datamodel"
+ignore_errors = true

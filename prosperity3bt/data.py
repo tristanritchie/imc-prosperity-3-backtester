@@ -1,6 +1,5 @@
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Optional
 
 from prosperity3bt.datamodel import Symbol, Trade
 from prosperity3bt.file_reader import FileReader
@@ -45,7 +44,7 @@ class BacktestData:
     prices: dict[int, dict[Symbol, PriceRow]]
     trades: dict[int, dict[Symbol, list[Trade]]]
     products: list[Symbol]
-    profit_loss: dict[Symbol, int]
+    profit_loss: dict[Symbol, float]
 
 
 def create_backtest_data(round_num: int, day_num: int, prices: list[PriceRow], trades: list[Trade]) -> BacktestData:
@@ -58,7 +57,7 @@ def create_backtest_data(round_num: int, day_num: int, prices: list[PriceRow], t
         trades_by_timestamp[trade.timestamp][trade.symbol].append(trade)
 
     products = sorted(set(row.product for row in prices))
-    profit_loss = {product: 0 for product in products}
+    profit_loss = {product: 0.0 for product in products}
 
     return BacktestData(
         round_num=round_num,
@@ -75,11 +74,11 @@ def has_day_data(file_reader: FileReader, round_num: int, day_num: int) -> bool:
         return file is not None
 
 
-def read_day_data(file_reader: FileReader, round_num: int, day_num: int, no_names: bool) -> Optional[BacktestData]:
+def read_day_data(file_reader: FileReader, round_num: int, day_num: int, no_names: bool) -> BacktestData:
     prices = []
     with file_reader.file([f"round{round_num}", f"prices_round_{round_num}_day_{day_num}.csv"]) as file:
         if file is None:
-            return None
+            raise ValueError(f"Prices data is not available for round {round_num} day {day_num}")
 
         for line in file.read_text(encoding="utf-8").splitlines()[1:]:
             columns = line.split(";")
@@ -104,7 +103,8 @@ def read_day_data(file_reader: FileReader, round_num: int, day_num: int, no_name
     for suffix in trades_suffixes:
         with file_reader.file([f"round{round_num}", f"trades_round_{round_num}_day_{day_num}_{suffix}.csv"]) as file:
             if file is None:
-                continue
+                trades_data_type = "Anonymized" if suffix == "nn" else "De-anonymized"
+                raise ValueError(f"{trades_data_type} trades data is not available for round {round_num} day {day_num}")
 
             for line in file.read_text(encoding="utf-8").splitlines()[1:]:
                 columns = line.split(";")
