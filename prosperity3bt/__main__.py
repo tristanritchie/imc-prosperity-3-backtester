@@ -1,10 +1,8 @@
 import sys
-import webbrowser
 from argparse import ArgumentParser
 from collections import defaultdict
 from datetime import datetime
-from functools import partial, reduce
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from functools import reduce
 from importlib import import_module, metadata, reload
 from pathlib import Path
 from typing import Any, Optional
@@ -12,6 +10,7 @@ from typing import Any, Optional
 from prosperity3bt.data import has_day_data
 from prosperity3bt.file_reader import FileReader, FileSystemReader, PackageResourcesReader
 from prosperity3bt.models import BacktestResult
+from prosperity3bt.open import open_visualizer
 from prosperity3bt.runner import run_backtest
 
 
@@ -167,29 +166,6 @@ def print_overall_summary(results: list[BacktestResult]) -> None:
     print(f"Total profit: {total_profit:,.0f}")
 
 
-class HTTPRequestHandler(SimpleHTTPRequestHandler):
-    def end_headers(self) -> None:
-        self.send_header("Access-Control-Allow-Origin", "*")
-        return super().end_headers()
-
-    def log_message(self, format: str, *args: Any) -> None:
-        return
-
-
-def open_visualizer(output_file: Path, no_requests: int) -> None:
-    http_handler = partial(HTTPRequestHandler, directory=str(output_file.parent))
-    http_server = HTTPServer(("localhost", 0), http_handler)
-
-    webbrowser.open(
-        f"https://jmerle.github.io/imc-prosperity-3-visualizer/?open=http://localhost:{http_server.server_port}/{output_file.name}"
-    )
-
-    # Chrome makes 2 requests: 1 OPTIONS request to check for CORS headers and 1 GET request to get the data
-    # Some users reported their browser only makes 1 request, which is covered by the --vis-requests option
-    for _ in range(no_requests):
-        http_server.handle_request()
-
-
 def format_path(path: Path) -> str:
     cwd = Path.cwd()
     if path.is_relative_to(cwd):
@@ -221,12 +197,6 @@ def main() -> None:
     )
     parser.add_argument("--no-out", action="store_true", help="skip saving the output log to a file")
     parser.add_argument("--no-progress", action="store_true", help="don't show progress bars")
-    parser.add_argument(
-        "--vis-requests",
-        type=int,
-        default=2,
-        help="number of requests the visualizer is expected to make to the backtester's HTTP server when using --vis",
-    )
     parser.add_argument(
         "--original-timestamps",
         action="store_true",
@@ -295,7 +265,7 @@ def main() -> None:
         print(f"\nSuccessfully saved backtest results to {format_path(output_file)}")
 
     if args.vis and output_file is not None:
-        open_visualizer(output_file, args.vis_requests)
+        open_visualizer(output_file)
 
 
 if __name__ == "__main__":
