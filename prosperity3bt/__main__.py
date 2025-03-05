@@ -60,9 +60,9 @@ def parse_days(file_reader: FileReader, days: list[str]) -> list[tuple[int, int]
     return parsed_days
 
 
-def parse_out(out: Optional[str], no_out: bool) -> Optional[Path]:
+def parse_out(out: Optional[Path], no_out: bool) -> Optional[Path]:
     if out is not None:
-        return Path(out).expanduser().resolve()
+        return out
 
     if no_out:
         return None
@@ -186,7 +186,7 @@ def cli(
     days: Annotated[list[str], Argument(help="The days to backtest on. <round>-<day> for a single day, <round> for all days in a round.", show_default=False)],
     merge_pnl: Annotated[bool, Option("--merge-pnl", help="Merge profit and loss across days.")] = False,
     vis: Annotated[bool, Option("--vis", help="Open backtest results in https://jmerle.github.io/imc-prosperity-3-visualizer/ when done.")] = False,
-    out: Annotated[Optional[str], Option(help="Path to save output log to (defaults to backtests/<timestamp>.log)", show_default=False)] = None,
+    out: Annotated[Optional[Path], Option(help="Path to save output log to (defaults to backtests/<timestamp>.log).", show_default=False, dir_okay=False, resolve_path=True)] = None,
     data: Annotated[Optional[Path], Option(help="Path to data directory. Must look similar in structure to https://github.com/jmerle/imc-prosperity-3-backtester/tree/master/prosperity3bt/resources.", show_default=False, exists=True, file_okay=False, dir_okay=True, resolve_path=True)] = None,
     print_output: Annotated[bool, Option("--print", help="Print the trader's output to stdout while it's running.")] = False,
     no_trades_matching: Annotated[bool, Option("--no-trades-matching", help="Disable matching orders against market trades.")] = False,
