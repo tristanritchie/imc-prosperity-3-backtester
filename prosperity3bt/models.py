@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any
 
 import orjson
@@ -101,3 +102,9 @@ class MarketTrade:
     trade: Trade
     buy_quantity: int
     sell_quantity: int
+
+
+class TradeMatchingMode(str, Enum):
+    all = "all"
+    worse = "worse"
+    none = "none"

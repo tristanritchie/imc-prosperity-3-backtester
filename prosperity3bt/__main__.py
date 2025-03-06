@@ -10,7 +10,7 @@ from typer import Argument, Exit, Option, Typer
 
 from prosperity3bt.data import has_day_data
 from prosperity3bt.file_reader import FileReader, FileSystemReader, PackageResourcesReader
-from prosperity3bt.models import BacktestResult
+from prosperity3bt.models import BacktestResult, TradeMatchingMode
 from prosperity3bt.open import open_visualizer
 from prosperity3bt.runner import run_backtest
 
@@ -189,7 +189,7 @@ def cli(
     out: Annotated[Optional[Path], Option(help="Path to save output log to (defaults to backtests/<timestamp>.log).", show_default=False, dir_okay=False, resolve_path=True)] = None,
     data: Annotated[Optional[Path], Option(help="Path to data directory. Must look similar in structure to https://github.com/jmerle/imc-prosperity-3-backtester/tree/master/prosperity3bt/resources.", show_default=False, exists=True, file_okay=False, dir_okay=True, resolve_path=True)] = None,
     print_output: Annotated[bool, Option("--print", help="Print the trader's output to stdout while it's running.")] = False,
-    no_trades_matching: Annotated[bool, Option("--no-trades-matching", help="Disable matching orders against market trades.")] = False,
+    match_trades: Annotated[TradeMatchingMode, Option(help="How to match orders against market trades. 'all' matches trades with prices equal to or worse than your quotes, 'worse' matches trades with prices worse than your quotes, 'none' does not match trades against orders at all.", case_sensitive=False)] = TradeMatchingMode.all,
     no_out: Annotated[bool, Option("--no-out", help="Skip saving the output log to a file.")] = False,
     no_progress: Annotated[bool, Option("--no-progress", help="Don't show progress bars.")] = False,
     original_timestamps: Annotated[bool, Option("--original-timestamps", help="Preserve original timestamps in output log rather than making them increase across days.")] = False,
@@ -227,7 +227,7 @@ def cli(
             round_num,
             day_num,
             print_output,
-            no_trades_matching,
+            match_trades,
             True,
             show_progress_bars,
         )

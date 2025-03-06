@@ -9,7 +9,14 @@ from tqdm import tqdm
 from prosperity3bt.data import LIMITS, BacktestData, read_day_data
 from prosperity3bt.datamodel import Observation, Order, OrderDepth, Symbol, Trade, TradingState
 from prosperity3bt.file_reader import FileReader
-from prosperity3bt.models import ActivityLogRow, BacktestResult, MarketTrade, SandboxLogRow, TradeRow
+from prosperity3bt.models import (
+    ActivityLogRow,
+    BacktestResult,
+    MarketTrade,
+    SandboxLogRow,
+    TradeMatchingMode,
+    TradeRow,
+)
 
 
 def prepare_state(state: TradingState, data: BacktestData) -> None:
@@ -97,7 +104,11 @@ def enforce_limits(
 
 
 def match_buy_order(
-    state: TradingState, data: BacktestData, order: Order, market_trades: list[MarketTrade]
+    state: TradingState,
+    data: BacktestData,
+    order: Order,
+    market_trades: list[MarketTrade],
+    trade_matching_mode: TradeMatchingMode,
 ) -> list[Trade]:
     trades = []
 
@@ -119,8 +130,15 @@ def match_buy_order(
         if order.quantity == 0:
             return trades
 
+    if trade_matching_mode == TradeMatchingMode.none:
+        return trades
+
     for market_trade in market_trades:
-        if market_trade.sell_quantity == 0 or market_trade.trade.price >= order.price:
+        if (
+            market_trade.sell_quantity == 0
+            or market_trade.trade.price > order.price
+            or (market_trade.trade.price == order.price and trade_matching_mode == TradeMatchingMode.worse)
+        ):
             continue
 
         volume = min(order.quantity, market_trade.sell_quantity)
@@ -142,7 +160,11 @@ def match_buy_order(
 
 
 def match_sell_order(
-    state: TradingState, data: BacktestData, order: Order, market_trades: list[MarketTrade]
+    state: TradingState,
+    data: BacktestData,
+    order: Order,
+    market_trades: list[MarketTrade],
+    trade_matching_mode: TradeMatchingMode,
 ) -> list[Trade]:
     trades = []
 
@@ -164,8 +186,15 @@ def match_sell_order(
         if order.quantity == 0:
             return trades
 
+    if trade_matching_mode == TradeMatchingMode.none:
+        return trades
+
     for market_trade in market_trades:
-        if market_trade.buy_quantity == 0 or market_trade.trade.price <= order.price:
+        if (
+            market_trade.buy_quantity == 0
+            or market_trade.trade.price < order.price
+            or (market_trade.trade.price == order.price and trade_matching_mode == TradeMatchingMode.worse)
+        ):
             continue
 
         volume = min(abs(order.quantity), market_trade.buy_quantity)
@@ -184,11 +213,17 @@ def match_sell_order(
     return trades
 
 
-def match_order(state: TradingState, data: BacktestData, order: Order, market_trades: list[MarketTrade]) -> list[Trade]:
+def match_order(
+    state: TradingState,
+    data: BacktestData,
+    order: Order,
+    market_trades: list[MarketTrade],
+    trade_matching_mode: TradeMatchingMode,
+) -> list[Trade]:
     if order.quantity > 0:
-        return match_buy_order(state, data, order, market_trades)
+        return match_buy_order(state, data, order, market_trades, trade_matching_mode)
     elif order.quantity < 0:
-        return match_sell_order(state, data, order, market_trades)
+        return match_sell_order(state, data, order, market_trades, trade_matching_mode)
     else:
         return []
 
@@ -198,7 +233,7 @@ def match_orders(
     data: BacktestData,
     orders: dict[Symbol, list[Order]],
     result: BacktestResult,
-    disable_trades_matching: bool,
+    trade_matching_mode: TradeMatchingMode,
 ) -> None:
     market_trades = {
         product: [MarketTrade(t, t.quantity, t.quantity) for t in trades]
@@ -214,7 +249,8 @@ def match_orders(
                     state,
                     data,
                     order,
-                    [] if disable_trades_matching else market_trades.get(product, []),
+                    market_trades.get(product, []),
+                    trade_matching_mode,
                 )
             )
 
@@ -238,7 +274,7 @@ def run_backtest(
     round_num: int,
     day_num: int,
     print_output: bool,
-    disable_trades_matching: bool,
+    trade_matching_mode: TradeMatchingMode,
     no_names: bool,
     show_progress_bar: bool,
 ) -> BacktestResult:
@@ -299,6 +335,6 @@ def run_backtest(
 
         create_activity_logs(state, data, result)
         enforce_limits(state, data, orders, sandbox_row)
-        match_orders(state, data, orders, result, disable_trades_matching)
+        match_orders(state, data, orders, result, trade_matching_mode)
 
     return result
