@@ -31,7 +31,7 @@ def prepare_state(state: TradingState, data: BacktestData) -> None:
 
         state.order_depths[product] = order_depth
 
-        state.listings[product] = Listing(product, product, 1)  # type: ignore[arg-type]
+        state.listings[product] = Listing(product, product, 1)
 
 
 def create_activity_logs(
