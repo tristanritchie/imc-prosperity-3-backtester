@@ -1,13 +1,12 @@
 import os
 from contextlib import closing, redirect_stdout
 from io import StringIO
-from typing import Any
 
 from IPython.utils.io import Tee
 from tqdm import tqdm
 
 from prosperity3bt.data import LIMITS, BacktestData, read_day_data
-from prosperity3bt.datamodel import Observation, Order, OrderDepth, Symbol, Trade, TradingState
+from prosperity3bt.datamodel import Listing, Observation, Order, OrderDepth, Symbol, Trade, TradingState
 from prosperity3bt.file_reader import FileReader
 from prosperity3bt.models import (
     ActivityLogRow,
@@ -32,11 +31,7 @@ def prepare_state(state: TradingState, data: BacktestData) -> None:
 
         state.order_depths[product] = order_depth
 
-        state.listings[product] = {  # type: ignore[assignment]
-            "symbol": product,
-            "product": product,
-            "denomination": 1,
-        }
+        state.listings[product] = Listing(product, product, 1)  # type: ignore[arg-type]
 
 
 def create_activity_logs(
@@ -269,7 +264,7 @@ def match_orders(
 
 
 def run_backtest(
-    trader: Any,
+    trader,
     file_reader: FileReader,
     round_num: int,
     day_num: int,
