@@ -6,7 +6,15 @@ from IPython.utils.io import Tee
 from tqdm import tqdm
 
 from prosperity3bt.data import LIMITS, BacktestData, read_day_data
-from prosperity3bt.datamodel import Listing, Observation, Order, OrderDepth, Symbol, Trade, TradingState
+from prosperity3bt.datamodel import (
+    Listing,
+    Observation,
+    Order,
+    OrderDepth,
+    Symbol,
+    Trade,
+    TradingState,
+)
 from prosperity3bt.file_reader import FileReader
 from prosperity3bt.models import (
     ActivityLogRow,
@@ -87,11 +95,20 @@ def enforce_limits(
         product_orders = orders.get(product, [])
         product_position = state.position.get(product, 0)
 
-        total_long = sum(order.quantity for order in product_orders if order.quantity > 0)
-        total_short = sum(abs(order.quantity) for order in product_orders if order.quantity < 0)
+        total_long = sum(
+            order.quantity for order in product_orders if order.quantity > 0
+        )
+        total_short = sum(
+            abs(order.quantity) for order in product_orders if order.quantity < 0
+        )
 
-        if product_position + total_long > LIMITS[product] or product_position - total_short < -LIMITS[product]:
-            sandbox_log_lines.append(f"Orders for product {product} exceeded limit of {LIMITS[product]} set")
+        if (
+            product_position + total_long > LIMITS[product]
+            or product_position - total_short < -LIMITS[product]
+        ):
+            sandbox_log_lines.append(
+                f"Orders for product {product} exceeded limit of {LIMITS[product]} set"
+            )
             orders.pop(product)
 
     if len(sandbox_log_lines) > 0:
@@ -108,11 +125,15 @@ def match_buy_order(
     trades = []
 
     order_depth = state.order_depths[order.symbol]
-    price_matches = sorted(price for price in order_depth.sell_orders.keys() if price <= order.price)
+    price_matches = sorted(
+        price for price in order_depth.sell_orders.keys() if price <= order.price
+    )
     for price in price_matches:
         volume = min(order.quantity, abs(order_depth.sell_orders[price]))
 
-        trades.append(Trade(order.symbol, price, volume, "SUBMISSION", "", state.timestamp))
+        trades.append(
+            Trade(order.symbol, price, volume, "SUBMISSION", "", state.timestamp)
+        )
 
         state.position[order.symbol] = state.position.get(order.symbol, 0) + volume
         data.profit_loss[order.symbol] -= price * volume
@@ -132,14 +153,24 @@ def match_buy_order(
         if (
             market_trade.sell_quantity == 0
             or market_trade.trade.price > order.price
-            or (market_trade.trade.price == order.price and trade_matching_mode == TradeMatchingMode.worse)
+            or (
+                market_trade.trade.price == order.price
+                and trade_matching_mode == TradeMatchingMode.worse
+            )
         ):
             continue
 
         volume = min(order.quantity, market_trade.sell_quantity)
 
         trades.append(
-            Trade(order.symbol, order.price, volume, "SUBMISSION", market_trade.trade.seller, state.timestamp)
+            Trade(
+                order.symbol,
+                order.price,
+                volume,
+                "SUBMISSION",
+                market_trade.trade.seller,
+                state.timestamp,
+            )
         )
 
         state.position[order.symbol] = state.position.get(order.symbol, 0) + volume
@@ -164,11 +195,16 @@ def match_sell_order(
     trades = []
 
     order_depth = state.order_depths[order.symbol]
-    price_matches = sorted((price for price in order_depth.buy_orders.keys() if price >= order.price), reverse=True)
+    price_matches = sorted(
+        (price for price in order_depth.buy_orders.keys() if price >= order.price),
+        reverse=True,
+    )
     for price in price_matches:
         volume = min(abs(order.quantity), order_depth.buy_orders[price])
 
-        trades.append(Trade(order.symbol, price, volume, "", "SUBMISSION", state.timestamp))
+        trades.append(
+            Trade(order.symbol, price, volume, "", "SUBMISSION", state.timestamp)
+        )
 
         state.position[order.symbol] = state.position.get(order.symbol, 0) - volume
         data.profit_loss[order.symbol] += price * volume
@@ -188,13 +224,25 @@ def match_sell_order(
         if (
             market_trade.buy_quantity == 0
             or market_trade.trade.price < order.price
-            or (market_trade.trade.price == order.price and trade_matching_mode == TradeMatchingMode.worse)
+            or (
+                market_trade.trade.price == order.price
+                and trade_matching_mode == TradeMatchingMode.worse
+            )
         ):
             continue
 
         volume = min(abs(order.quantity), market_trade.buy_quantity)
 
-        trades.append(Trade(order.symbol, order.price, volume, market_trade.trade.buyer, "SUBMISSION", state.timestamp))
+        trades.append(
+            Trade(
+                order.symbol,
+                order.price,
+                volume,
+                market_trade.trade.buyer,
+                "SUBMISSION",
+                state.timestamp,
+            )
+        )
 
         state.position[order.symbol] = state.position.get(order.symbol, 0) - volume
         data.profit_loss[order.symbol] += order.price * volume
@@ -299,7 +347,9 @@ def run_backtest(
     )
 
     timestamps = sorted(data.prices.keys())
-    timestamps_iterator = tqdm(timestamps, ascii=True) if show_progress_bar else timestamps
+    timestamps_iterator = (
+        tqdm(timestamps, ascii=True) if show_progress_bar else timestamps
+    )
 
     for timestamp in timestamps_iterator:
         state.timestamp = timestamp
@@ -332,4 +382,5 @@ def run_backtest(
         enforce_limits(state, data, orders, sandbox_row)
         match_orders(state, data, orders, result, trade_matching_mode)
 
+    trader.finalize()
     return result
