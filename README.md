@@ -74,7 +74,7 @@ Data for the following rounds is included:
 - Round 1: prices and anonymized trades data on RAINFOREST_RESIN, KELP, and SQUID_INK.
 - Round 2: prices and anonymized trades data on RAINFOREST_RESIN, KELP, SQUID_INK, CROISSANTS, JAMS, DJEMBES, PICNIC_BASKET1, and PICNIC_BASKET2.
 - Round 6: prices and anonymized trades data that was used during submission runs. Round 6 day X represents the submission data of round X, where X = 0 means the tutorial round. The anonymized trades data is derived from the submission of an algorithm that places no orders.
-- Round 7: prices data that was used during end-of-round runs. Round 7 day X represents the submission data of round X. The exception to the rule is round 1, its old end-of-round data can be found in round 7 day 0 while its new data will be made available at round 7 day 1 once its made available.
+- Round 7: prices data that was used during end-of-round runs. Round 7 day X represents the submission data of round X. The exception to the rule is round 1, its old end-of-round data can be found in round 7 day 0 while its new data will be at round 7 day 1 once its made available.
 
 ## Environment Variables
 
