@@ -17,7 +17,9 @@ class SandboxLogRow:
         return SandboxLogRow(
             self.timestamp + timestamp_offset,
             self.sandbox_log,
-            self.lambda_log.replace(f"[[{self.timestamp},", f"[[{self.timestamp + timestamp_offset},"),
+            self.lambda_log.replace(
+                f"[[{self.timestamp},", f"[[{self.timestamp + timestamp_offset},"
+            ),
         )
 
     def __str__(self) -> str:
@@ -39,7 +41,9 @@ class ActivityLogRow:
     def timestamp(self) -> int:
         return self.columns[1]
 
-    def with_offset(self, timestamp_offset: int, profit_loss_offset: float) -> "ActivityLogRow":
+    def with_offset(
+        self, timestamp_offset: int, profit_loss_offset: float
+    ) -> "ActivityLogRow":
         new_columns = self.columns[:]
         new_columns[1] += timestamp_offset
         new_columns[-1] += profit_loss_offset
@@ -81,7 +85,7 @@ class TradeRow:
     "symbol": "{self.trade.symbol}",
     "currency": "SEASHELLS",
     "price": {self.trade.price},
-    "quantity": {self.trade.quantity},
+    "quantity": {self.trade.quantity}
   }}
         """.strip()
         )

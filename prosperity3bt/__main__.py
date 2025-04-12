@@ -5,11 +5,16 @@ from functools import reduce
 from importlib import import_module, metadata, reload
 from pathlib import Path
 from typing import Annotated, Any, Optional
+import json
 
 from typer import Argument, Option, Typer
 
 from prosperity3bt.data import has_day_data
-from prosperity3bt.file_reader import FileReader, FileSystemReader, PackageResourcesReader
+from prosperity3bt.file_reader import (
+    FileReader,
+    FileSystemReader,
+    PackageResourcesReader,
+)
 from prosperity3bt.models import BacktestResult, TradeMatchingMode
 from prosperity3bt.open import open_visualizer
 from prosperity3bt.runner import run_backtest
@@ -92,7 +97,10 @@ def print_day_summary(result: BacktestResult) -> None:
 
 
 def merge_results(
-    a: BacktestResult, b: BacktestResult, merge_profit_loss: bool, merge_timestamps: bool
+    a: BacktestResult,
+    b: BacktestResult,
+    merge_profit_loss: bool,
+    merge_timestamps: bool,
 ) -> BacktestResult:
     sandbox_logs = a.sandbox_logs[:]
     activity_logs = a.activity_logs[:]
@@ -116,10 +124,15 @@ def merge_results(
             profit_loss_offsets[row.columns[2]] = row.columns[-1]
 
         activity_logs.extend(
-            [row.with_offset(timestamp_offset, profit_loss_offsets[row.columns[2]]) for row in b.activity_logs]
+            [
+                row.with_offset(timestamp_offset, profit_loss_offsets[row.columns[2]])
+                for row in b.activity_logs
+            ]
         )
     else:
-        activity_logs.extend([row.with_offset(timestamp_offset, 0) for row in b.activity_logs])
+        activity_logs.extend(
+            [row.with_offset(timestamp_offset, 0) for row in b.activity_logs]
+        )
 
     return BacktestResult(a.round_num, a.day_num, sandbox_logs, activity_logs, trades)
 
@@ -242,7 +255,10 @@ def cli(
         print_overall_summary(results)
 
     if output_file is not None:
-        merged_results = reduce(lambda a, b: merge_results(a, b, merge_pnl, not original_timestamps), results)
+        merged_results = reduce(
+            lambda a, b: merge_results(a, b, merge_pnl, not original_timestamps),
+            results,
+        )
         write_output(output_file, merged_results)
         print(f"\nSuccessfully saved backtest results to {format_path(output_file)}")
 

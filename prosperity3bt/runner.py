@@ -45,17 +45,25 @@ def prepare_state(state: TradingState, data: BacktestData) -> None:
 def type_check_orders(orders: dict[Symbol, list[Order]]) -> None:
     for key, value in orders.items():
         if not isinstance(key, str):
-            raise ValueError(f"Orders key '{key}' is of type {type(key)}, expected a str")
+            raise ValueError(
+                f"Orders key '{key}' is of type {type(key)}, expected a str"
+            )
 
         for order in value:
             if not isinstance(order.symbol, str):
-                raise ValueError(f"Order symbol of '{order}' is of type {type(order.symbol)}, expected a str")
+                raise ValueError(
+                    f"Order symbol of '{order}' is of type {type(order.symbol)}, expected a str"
+                )
 
             if not isinstance(order.price, int):
-                raise ValueError(f"Order price of '{order}' is of type {type(order.price)}, expected an int")
+                raise ValueError(
+                    f"Order price of '{order}' is of type {type(order.price)}, expected an int"
+                )
 
             if not isinstance(order.quantity, int):
-                raise ValueError(f"Order quantity of '{order}' is of type {type(order.quantity)}, expected an int")
+                raise ValueError(
+                    f"Order quantity of '{order}' is of type {type(order.quantity)}, expected an int"
+                )
 
 
 def create_activity_logs(
@@ -399,5 +407,5 @@ def run_backtest(
         enforce_limits(state, data, orders, sandbox_row)
         match_orders(state, data, orders, result, trade_matching_mode)
 
-    trader.finalize()
+    # trader.finalize()
     return result
